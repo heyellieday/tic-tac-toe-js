@@ -23,7 +23,7 @@ var makeChoice = function() {
 		var chooseACorner = function(){
 			for (var i = 0; i < grid.length; i++) {
 				console.log("choosing a corner")
-				if (grid[i].number == 0 || grid[i].number % 2 == 0 && grid[i].player === ""){
+				if (grid[i].number % 2 == 0 && grid[i].player === ""){
 					console.log(grid[i].number);
 					return grid[i].number;
 				}
@@ -36,22 +36,45 @@ var makeChoice = function() {
 		}
 
 		var blockHuman = function(){
+			var winningLinesCurrent = [[null, null, null],[null, null, null],[null, null, null],[null, null, null],[null, null, null],[null, null, null],[null, null, null],[null, null, null]];
+			var nonWinningLinesCurrent = [[null, null, null],[null, null, null],[null, null, null],[null, null, null],[null, null, null],[null, null, null],[null, null, null],[null, null, null]];
+			var winningCounts = [0,0,0,0,0,0,0,0];
+			var lineCheckIncr = 0;
 			for (var i = 0; i < winningLines.length; i++) {
+				var spotCheckIncr = 0;
 				for (var j = 0; j < winningLines[i].length; j++) {
-					var winningSpots = 0;
-					var nonWinningSpot = null;
 					for (var k = 0; k < grid.length; k++) {
 						if (grid[k].player === "human" && grid[k].number == winningLines[i][j]){
-							winningSpots++;
+							winningLinesCurrent[i][j] = grid[k].number;
 							console.log("A match");
-						}else {
-							nonWinningSpot = grid[k].number;
-							console.log("nonWinningSpot");
+							winningCounts[i]++;
+						}
+						if(grid[k].player === "" && grid[k].number == winningLines[i][j]){
+							nonWinningLinesCurrent[i][j] = grid[k].number;
+							console.log("non taken spot: "+ grid[k].number);
 						}
 					}
-					if (winningSpots == 2)  {
-						return nonWinningSpot;
+					console.log(winningLinesCurrent[i]);
+					console.log(nonWinningLinesCurrent[i]);
+					console.log(winningCounts);
+					spotCheckIncr++;
+					if (winningCounts[i] == 2 && spotCheckIncr == 3)  {
+						console.log("blocked");
+						var spaceToBlock;
+						for (var l = 0; l < nonWinningLinesCurrent[i].length; l++) {
+							if (nonWinningLinesCurrent[i][l] !== null){
+								spaceToBlock = nonWinningLinesCurrent[i][l];
+								console.log(spaceToBlock);
+							}
+						}
+
+						return spaceToBlock;
 					}
+				}
+				lineCheckIncr++;
+				console.log(lineCheckIncr);
+				if(lineCheckIncr == 8){
+					return chooseACorner();
 				}
 			}
 		}
@@ -73,16 +96,14 @@ var makeChoice = function() {
 			if (lastComputerChoice === 0 || lastComputerChoice % 2 === 0){
 				console.log("turn: "+ turn);
 				if (lastHumanChoice == 0 || lastHumanChoice % 2 == 0) {
-					var answer = chooseACorner();
-				}
-				if (lastHumanChoice == 0 || !(lastHumanChoice % 2 == 0)) {
-					var answer = chooseACorner();
+					var answer = blockHuman();
 				}
 				recordComputerAnswer(answer);
 			}
 		}
 		if (turn > 3) {
-			blockHuman();
+			var answer = blockHuman();
+			recordComputerAnswer(answer);
 		}
 
 	}
